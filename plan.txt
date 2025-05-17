@@ -1,0 +1,4 @@
+plan
+1. aky jazyk/kniznicu pouzit
+2. ako to prepojit
+3. ako to urobit pekne
