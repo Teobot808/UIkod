@@ -2,3 +2,32 @@ plan
 1. aky jazyk/kniznicu pouzit
 2. ako to prepojit
 3. ako to urobit pekne
+
+
+# f24_data_display_app
+
+Project structure:
+
+```
+f24_data_display_app/
+├── common/
+│   ├── config.py            # Settings (e.g. serial port, log paths)
+│   ├── logger.py            # Shared logger config
+│   └── protocol.py          # JSON schema & utilities
+│
+├── host/
+│   ├── serial_reader.py     # Reads from Arduino or mock
+│   ├── websocket_server.py  # Broadcasts data to clients
+│   └── driver_ui.py         # Fullscreen UI for driver
+│
+├── client/
+│   ├── websocket_client.py  # Connects to host server
+│   └── ui.py                # Toggleable UI: driver & pit views
+│
+├── mock/
+│   └── mock_data_source.py  # Fake sensor data for testing
+│
+├── main_host.py             # Runs serial + server + UI
+├── main_client.py           # Runs UI client
+└── requirements.txt         # Python deps
+```
