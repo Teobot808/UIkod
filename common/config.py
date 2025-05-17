@@ -20,3 +20,13 @@ def autodetect_serial_port():
     
     # Fallback: return first port
     return ports[0].device
+
+# Set baudrate constant
+SERIAL_BAUDRATE = 115200
+
+# Try to autodetect and set SERIAL_PORT
+try:
+    SERIAL_PORT = autodetect_serial_port()
+except RuntimeError as e:
+    print(f"Warning: {e}")
+    SERIAL_PORT = None

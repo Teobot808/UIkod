@@ -1,58 +1,34 @@
-import asyncio
-import json
+# host/serial_reader.py
+
 import serial
-import serial_asyncio
-import logging
-import os
-
-from common.logger import setup_logger
-
-logger = setup_logger("serial")
+from common.config import autodetect_serial_port
 
 class SerialReader:
-    def __init__(self, port=None, baudrate=115200, mock_file=None):
-        self.port = port
-        self.baudrate = baudrate
-        self.mock_file = mock_file
-
-    async def read_loop(self, queue):
-        if self.mock_file:
-            logger.info(f"Using mock data from {self.mock_file}")
-            await self._read_mock(queue)
+    def __init__(self, mock_class=None, logger=None):
+        self.logger = logger
+        if mock_class is not None:
+            self.serial = mock_class()
+            if self.logger:
+                self.logger.info("Using mock serial port.")
         else:
-            logger.info(f"Using real serial port: {self.port} at {self.baudrate} baud")
-            await self._read_serial(queue)
-
-    async def _read_mock(self, queue):
-        process = await asyncio.create_subprocess_exec(
-            "python", self.mock_file,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-
-        while True:
-            line = await process.stdout.readline()
-            if not line:
-                break
+            port = autodetect_serial_port()
+            baudrate = 115200  # You can move this to config.py if you want
             try:
-                data = json.loads(line.decode().strip())
-                logger.debug(f"Mock input: {data}")
-                await queue.put(data)
-            except json.JSONDecodeError as e:
-                logger.warning(f"Invalid mock JSON: {line} ({e})")
+                self.serial = serial.Serial(port, baudrate, timeout=1)
+                if self.logger:
+                    self.logger.info(f"Opened serial port {port} at {baudrate} baud.")
+            except Exception as e:
+                if self.logger:
+                    self.logger.error(f"Failed to open serial port {port}: {e}")
+                raise
 
-    async def _read_serial(self, queue):
+    def read_line(self):
         try:
-            reader, _ = await serial_asyncio.open_serial_connection(
-                url=self.port, baudrate=self.baudrate
-            )
-            while True:
-                line = await reader.readline()
-                try:
-                    data = json.loads(line.decode().strip())
-                    logger.debug(f"Serial input: {data}")
-                    await queue.put(data)
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Invalid serial JSON: {line} ({e})")
-        except serial.SerialException as e:
-            logger.error(f"Could not open serial port: {e}")
+            line = self.serial.readline()
+            if not line:
+                return None
+            return line.decode('utf-8').strip()
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Error reading line from serial port: {e}")
+            return None

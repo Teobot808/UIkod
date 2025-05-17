@@ -1,25 +1,16 @@
-# test_mock_reader.py
-
-import asyncio
 from host.serial_reader import SerialReader
+from mock.mock_data_source import MockSerial
 from common.logger import setup_logger
+import time
+
+print("Starting test...")
 
 logger = setup_logger("test_mock_reader")
+mock_serial = MockSerial()
+reader = SerialReader(mock_class=MockSerial, logger=logger)
 
-async def main():
-    queue = asyncio.Queue()
-
-    reader = SerialReader(port=None, mock_file="mock/mock_data_source.py")
-
-    async def consume_queue():
-        while True:
-            data = await queue.get()
-            logger.info(f"Got from queue: {data}")
-
-    await asyncio.gather(
-        reader.read_loop(queue),
-        consume_queue()
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
+for _ in range(5):
+    print("Reading line...")
+    data = reader.read_line()
+    print("Parsed data:", data)
+    time.sleep(0.2)
