@@ -1,5 +1,9 @@
 import sys
 import json
+import asyncio
+import threading
+import queue
+import zmq
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsView
 from PySide6.QtCore import Qt, QRectF, QTimer
@@ -7,6 +11,7 @@ from host.driver_ui_form_widget import Ui_Form
 from host.serial_reader import SerialReader
 from mock.mock_data_source import MockSerial
 from common.logger import setup_logger
+from host.websocket_server import WebSocketServer
 
 
 class DriverUI(QMainWindow):
@@ -37,6 +42,10 @@ class DriverUI(QMainWindow):
         logger = setup_logger("driver_ui")
         mock_serial = MockSerial()
         self.reader = SerialReader(mock_class=lambda: mock_serial, logger=logger)
+        
+        context = zmq.Context()
+        self.zmq_socket = context.socket(zmq.PUB)
+        self.zmq_socket.bind("tcp://*:5555")  # port 5555 for telemetry
 
         # Timer for polling serial
         self.timer = QTimer(self)
@@ -44,6 +53,12 @@ class DriverUI(QMainWindow):
         self.timer.start(100)
 
         self.scale_ui()
+        # Shared queue for WebSocket server
+
+        self.broadcast_queue = asyncio.Queue()
+        # Start WebSocket server in background thread
+
+        threading.Thread(target=self.start_websocket_server, daemon=True).start()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -76,6 +91,24 @@ class DriverUI(QMainWindow):
         self.ui.time_value.setText(f"{minutes:02}:{seconds:02}")
 
         self.ui.PWM_bar.setValue(data.get('pwm', 0))
+        try:
+            self.broadcast_queue.put_nowait(data)
+        except Exception as e:
+            print(f"[websocket queue error] {e}")
+        try:
+             self.zmq_socket.send_json(data)
+        except Exception as e:
+             print(f"[ZMQ send error] {e}")
+
+
+
+    def start_websocket_server(self):
+        asyncio.run(self._websocket_task())
+
+    async def _websocket_task(self):
+        server = WebSocketServer(data_queue=self.broadcast_queue)
+        await server.run_server()
+
 
 
 if __name__ == "__main__":

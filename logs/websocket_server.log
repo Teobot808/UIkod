@@ -1,0 +1,14 @@
+2025-05-18 18:29:33,692 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 18:38:58,475 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 18:47:27,245 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 18:52:20,718 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 18:57:27,440 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 18:57:38,511 - INFO - Client connected: ('127.0.0.1', 64990)
+2025-05-18 19:32:01,139 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 19:32:10,190 - INFO - Client connected: ('127.0.0.1', 49893)
+2025-05-18 19:34:45,303 - INFO - Client disconnected: ('127.0.0.1', 49893)
+2025-05-18 21:44:25,961 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 21:44:34,047 - INFO - Client connected: ('127.0.0.1', 55383)
+2025-05-18 21:45:02,530 - INFO - Client disconnected: ('127.0.0.1', 55383)
+2025-05-18 21:57:06,974 - INFO - Starting WebSocket server at ws://0.0.0.0:8765
+2025-05-18 22:29:05,170 - INFO - Starting WebSocket server at ws://0.0.0.0:8765

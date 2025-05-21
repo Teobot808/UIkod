@@ -14,7 +14,7 @@ class WebSocketServer:
         self.port = port
         self.clients = set()
 
-    async def handler(self, websocket, path):
+    async def handler(self, websocket, path=None):
         # Register client
         self.clients.add(websocket)
         logger.info(f"Client connected: {websocket.remote_address}")
