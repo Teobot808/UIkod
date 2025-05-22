@@ -4,7 +4,9 @@ import asyncio
 import threading
 import queue
 import zmq
-from qt_compat import QtWidgets, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer
+from qt_compat import get_qt_modules
+QtWidgets, QtCore, QtGui, QApplication, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer = get_qt_modules()
+
 
 
 from host.driver_ui_form_widget import Ui_Form
