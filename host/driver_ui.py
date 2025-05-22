@@ -4,9 +4,9 @@ import asyncio
 import threading
 import queue
 import zmq
-from PySide6 import QtWidgets
-from PySide6.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsView
-from PySide6.QtCore import Qt, QRectF, QTimer
+from qt_compat import QtWidgets, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer
+
+
 from host.driver_ui_form_widget import Ui_Form
 from host.serial_reader import SerialReader
 from mock.mock_data_source import MockSerial
