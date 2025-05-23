@@ -12,3 +12,5 @@
 2025-05-23 01:52:42,393 - INFO - Using mock serial port.
 2025-05-23 02:41:05,943 - INFO - Using mock serial port.
 2025-05-23 12:46:54,594 - INFO - Using mock serial port.
+2025-05-23 19:43:03,843 - INFO - Using real serial port: /dev/ttyACM0
+2025-05-23 19:43:03,845 - INFO - Opened serial port /dev/ttyACM0 at 115200 baud.

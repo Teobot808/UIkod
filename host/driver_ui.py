@@ -123,8 +123,40 @@ class DriverUI(QMainWindow):
         await server.run_server()
 
 
+def apply_dark_theme(app):
+    dark_stylesheet = """
+        QWidget {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        QFrame {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+        }
+
+        QLabel {
+            color: #ffffff;
+        }
+
+        QProgressBar {
+            border: 2px solid grey;
+            border-radius: 5px;
+            background-color: #222;
+            text-align: center;
+            color: white;
+        }
+
+        QProgressBar::chunk {
+            background-color: #05B8CC;
+            width: 20px;
+        }
+    """
+    app.setStyleSheet(dark_stylesheet)
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    apply_dark_theme(app)
     window = DriverUI()
     window.setWindowTitle("Driver UI")
     window.show()
