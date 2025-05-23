@@ -11,6 +11,7 @@ def autodetect_serial_port():
         p.device for p in ports if (
             "Arduino" in p.description or
             "CH340" in p.description or
+            "ttyACM" in p.description or
             "USB Serial" in p.description
         )
     ]
