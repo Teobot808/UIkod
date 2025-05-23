@@ -45,13 +45,14 @@ class DriverUI(QMainWindow):
         logger = setup_logger("driver_ui")
         mock_serial = MockSerial()
         try:
-         serial_port = autodetect_serial_port()
-         logger.info(f"Using real serial port: {serial_port}")
-         self.reader = SerialReader(port=serial_port, logger=logger)
+             serial_port = autodetect_serial_port()
+             logger.info(f"Using real serial port: {serial_port}")
+             self.reader = SerialReader(port=serial_port, logger=logger)
         except Exception as e:
-            logger.warning("No serial port found, using mock serial.")
-            from mock.mock_data_source import MockSerial
-            self.reader = SerialReader(mock_class=MockSerial, logger=logger)
+             logger.warning(f"No serial port found, using mock serial. ({e})")
+             mock_serial = MockSerial()
+             self.reader = SerialReader(mock_class=lambda: mock_serial, logger=logger)
+
 
         
         context = zmq.Context()
