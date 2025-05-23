@@ -4,7 +4,7 @@ import zmq
 import platform
 from collections import deque
 from qt_compat import get_qt_modules
-QtWidgets, QtCore, QtGui, QApplication, QMainWindow, Qt = get_qt_modules()
+QtWidgets, QtCore, QtGui, QApplication, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer = get_qt_modules()
 import pyqtgraph as pg
 
 class TelemetryDashboard(QMainWindow):
@@ -29,16 +29,30 @@ class TelemetryDashboard(QMainWindow):
         # Raw data display (left)
         self.value_labels = {}
         for label in ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "current", "temp1", "temp2", "temp3", "pwm", "rpm", "speed", "mode", "warning", "debug"]:
-            l = QtWidgets.QLabel(f"{label}: ---")
-            self.left_panel.addWidget(l)
-            self.value_labels[label] = l
+             l = QtWidgets.QLabel(f"{label}: ---")
+             font = l.font()
+             font.setPointSize(14)
+             l.setFont(font)
+             self.left_panel.addWidget(l)
+             self.value_labels[label] = l
+
 
         # Right static values
+        font_big = QtGui.QFont()
+        font_big.setPointSize(14)
+
         self.laps_label = QtWidgets.QLabel("Laps: ---")
+        self.laps_label.setFont(font_big)
+
         self.elapsed_label = QtWidgets.QLabel("Elapsed: 00:00")
+        self.elapsed_label.setFont(font_big)
+
         self.lap_time_label = QtWidgets.QLabel("Lap Time: 00:00")
+        self.lap_time_label.setFont(font_big)
+
         for w in [self.laps_label, self.elapsed_label, self.lap_time_label]:
             self.right_panel.addWidget(w)
+
 
         # Graphs
         self.graph_widgets = {}
@@ -60,7 +74,7 @@ class TelemetryDashboard(QMainWindow):
     def setup_zmq(self):
         context = zmq.Context()
         self.socket = context.socket(zmq.SUB)
-        self.socket.connect("tcp://127.0.0.1:5555")  # Update with Pi's Tailscale IP if needed
+        self.socket.connect("tcp://100.92.87.111:5555")  # Update with Pi's Tailscale IP if needed
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
         self.poller = zmq.Poller()
@@ -81,10 +95,22 @@ class TelemetryDashboard(QMainWindow):
                 pass
 
     def update_values(self):
-        d = self.latest_data
-        for key in self.value_labels:
-            if key in d:
-                self.value_labels[key].setText(f"{key}: {d[key]}")
+     d = self.latest_data
+     for key in self.value_labels:
+        if key in d:
+            self.value_labels[key].setText(f"{key}: {d[key]}")
+
+    # Add derived voltage
+        if "V1" in d and "V2" in d:
+            voltage = d["V1"] + d["V2"]
+            self.graph_data["voltage"].append(voltage)
+
+        if "speed" in d:
+            self.graph_data["speed"].append(d["speed"])
+        if "current" in d:
+            self.graph_data["current"].append(d["current"])
+        if "pwm" in d:
+            self.graph_data["pwm"].append(d["pwm"])
 
         if "laps" in d:
             self.laps_label.setText(f"Laps: {d['laps']}")
@@ -99,10 +125,6 @@ class TelemetryDashboard(QMainWindow):
             seconds = int(d['lap_time']) % 60
             self.lap_time_label.setText(f"Lap Time: {minutes:02}:{seconds:02}")
 
-        # Append to graph buffers
-        for key in ["speed", "voltage", "current", "pwm"]:
-            if key in d:
-                self.graph_data[key].append(d[key])
 
     def update_graphs(self):
         for key, plot in self.graph_widgets.items():
