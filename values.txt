@@ -1,0 +1,20 @@
+V1 - bat1
+V2 - bat2
+V3 - motor
+V4
+V5
+V6
+V7
+current
+temp1
+temp2
+temp3
+pwm
+laps
+time - elapsed from start
+time - current lap
+rpm
+speed
+mode - 1 or 2 or 3 {int value}
+warning - int value (need to assign errors to numbers, I will do it later)
+debug value - int (this will be used later)

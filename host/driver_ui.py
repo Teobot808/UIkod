@@ -8,7 +8,6 @@ from qt_compat import get_qt_modules
 QtWidgets, QtCore, QtGui, QApplication, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer = get_qt_modules()
 
 
-
 from host.driver_ui_form_widget import Ui_Form
 from host.serial_reader import SerialReader
 from mock.mock_data_source import MockSerial
@@ -53,8 +52,6 @@ class DriverUI(QMainWindow):
              mock_serial = MockSerial()
              self.reader = SerialReader(mock_class=lambda: mock_serial, logger=logger)
 
-
-        
         context = zmq.Context()
         self.zmq_socket = context.socket(zmq.PUB)
         self.zmq_socket.bind("tcp://*:5555")  # port 5555 for telemetry
@@ -94,7 +91,13 @@ class DriverUI(QMainWindow):
 
     def update_ui(self, data):
         self.ui.speed_value.setText(f"{data.get('speed', 0)} km/h")
-        self.ui.voltage_value.setText(f"{data.get('voltage', 0):.2f} V")
+
+        # Compute battery voltage from V1 + V2
+        v1 = data.get("V1", 0)
+        v2 = data.get("V2", 0)
+        total_voltage = v1 + v2
+        self.ui.voltage_value.setText(f"{total_voltage:.2f} V")
+
         self.ui.laps_value.setText(f"Laps: {data.get('laps', 0)}")
 
         elapsed = int(data.get('time', 0))
@@ -112,15 +115,12 @@ class DriverUI(QMainWindow):
         except Exception as e:
              print(f"[ZMQ send error] {e}")
 
-
-
     def start_websocket_server(self):
         asyncio.run(self._websocket_task())
 
     async def _websocket_task(self):
         server = WebSocketServer(data_queue=self.broadcast_queue)
         await server.run_server()
-
 
 
 if __name__ == "__main__":
