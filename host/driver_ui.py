@@ -14,6 +14,7 @@ from host.serial_reader import SerialReader
 from mock.mock_data_source import MockSerial
 from common.logger import setup_logger
 from host.websocket_server import WebSocketServer
+from common.config import autodetect_serial_port
 
 
 class DriverUI(QMainWindow):
@@ -43,7 +44,15 @@ class DriverUI(QMainWindow):
         # Serial reader using mock
         logger = setup_logger("driver_ui")
         mock_serial = MockSerial()
-        self.reader = SerialReader(mock_class=lambda: mock_serial, logger=logger)
+        try:
+         serial_port = autodetect_serial_port()
+         logger.info(f"Using real serial port: {serial_port}")
+         self.reader = SerialReader(port=serial_port, logger=logger)
+        except Exception as e:
+            logger.warning("No serial port found, using mock serial.")
+            from mock.mock_data_source import MockSerial
+            self.reader = SerialReader(mock_class=MockSerial, logger=logger)
+
         
         context = zmq.Context()
         self.zmq_socket = context.socket(zmq.PUB)
