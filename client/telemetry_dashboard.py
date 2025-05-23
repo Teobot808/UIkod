@@ -57,16 +57,21 @@ class TelemetryDashboard(QMainWindow):
         # Graphs
         self.graph_widgets = {}
         self.graph_data = {}
-        self.max_points = 100
+        self.graph_lines = {}  # NEW
+        self.max_points = 200
+
         for key in ["speed", "voltage", "current", "pwm"]:
             plot = pg.PlotWidget(title=key.capitalize())
+            plot.setYRange(0, 100)  # adjust range if needed
             self.graph_widgets[key] = plot
             self.graph_data[key] = deque(maxlen=self.max_points)
+            self.graph_lines[key] = plot.plot(pen=pg.mkPen('c', width=2))  # Persistent line
             self.graph_area.addWidget(plot)
+
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_graphs)
-        self.timer.start(200)
+        self.timer.start(50)
 
         self.latest_data = {}
         self.setup_zmq()
@@ -127,10 +132,11 @@ class TelemetryDashboard(QMainWindow):
 
 
     def update_graphs(self):
-        for key, plot in self.graph_widgets.items():
+        for key, line in self.graph_lines.items():
             data = list(self.graph_data[key])
-            plot.clear()
-            plot.plot(data, pen=pg.mkPen('c', width=2))
+            if data:
+                line.setData(data)
+
 
 
 if __name__ == "__main__":
