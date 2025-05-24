@@ -138,11 +138,14 @@ class DriverUI(QMainWindow):
             print(f"[InfluxDB error] {e}")
 
         try:
-            json.dump(data, self.data_log_file)
+            timestamp = datetime.now().isoformat()
+            logged_data = {"timestamp": timestamp, **data}
+            json.dump(logged_data, self.data_log_file)
             self.data_log_file.write("\n")
             self.data_log_file.flush()
         except Exception as e:
             print(f"[data log error] {e}")
+
 
     def start_websocket_server(self):
         asyncio.run(self._websocket_task())
