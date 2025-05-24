@@ -1,5 +1,7 @@
 import sys
 import json
+import os
+import datetime
 import zmq
 import platform
 from collections import deque
@@ -75,6 +77,10 @@ class TelemetryDashboard(QMainWindow):
 
         self.latest_data = {}
         self.setup_zmq()
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        os.makedirs("logs", exist_ok=True)
+        self.json_log_file = open(f"logs/telemetry_dashboard_{timestamp}.jsonl", "w")
+
 
     def setup_zmq(self):
         context = zmq.Context()
@@ -95,6 +101,9 @@ class TelemetryDashboard(QMainWindow):
             try:
                 msg = self.socket.recv_json(zmq.NOBLOCK)
                 self.latest_data = msg
+                self.json_log_file.write(json.dumps(msg) + "\n")
+                self.json_log_file.flush()
+
                 self.update_values()
             except zmq.Again:
                 pass
