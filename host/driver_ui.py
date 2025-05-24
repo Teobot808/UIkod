@@ -2,6 +2,9 @@ import sys
 import json
 import asyncio
 import threading
+import requests
+import uuid
+import time
 import queue
 import zmq
 from qt_compat import get_qt_modules
@@ -69,6 +72,9 @@ class DriverUI(QMainWindow):
 
         threading.Thread(target=self.start_websocket_server, daemon=True).start()
 
+        self.influx_url = "http://100.117.215.100:8086/write?db=telemetry"  # ← change IP
+        self.run_id = str(uuid.uuid4())  # Unique ID per program run
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.scale_ui()
@@ -114,6 +120,19 @@ class DriverUI(QMainWindow):
              self.zmq_socket.send_json(data)
         except Exception as e:
              print(f"[ZMQ send error] {e}")
+
+
+            # Send to InfluxDB
+        try:
+            fields = []
+            for key, value in data.items():
+                if isinstance(value, (int, float)):
+                    fields.append(f"{key}={value}")
+            if fields:
+                line = f"telemetry,run_id={self.run_id} " + ",".join(fields)
+                requests.post(self.influx_url, data=line.encode('utf-8'), timeout=1)
+        except Exception as e:
+            print(f"[InfluxDB error] {e}")
 
     def start_websocket_server(self):
         asyncio.run(self._websocket_task())
