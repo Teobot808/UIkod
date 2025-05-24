@@ -6,6 +6,8 @@ import requests
 import uuid
 import time
 import queue
+from datetime import datetime
+import os
 import zmq
 from qt_compat import get_qt_modules
 QtWidgets, QtCore, QtGui, QApplication, QMainWindow, QGraphicsScene, QGraphicsView, Qt, QRectF, QTimer = get_qt_modules()
@@ -74,6 +76,7 @@ class DriverUI(QMainWindow):
 
         self.influx_url = "http://100.117.215.100:8086/write?db=telemetry"  # ← change IP
         self.run_id = str(uuid.uuid4())  # Unique ID per program run
+        self.data_log_file = create_data_logger()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -134,6 +137,13 @@ class DriverUI(QMainWindow):
         except Exception as e:
             print(f"[InfluxDB error] {e}")
 
+        try:
+            json.dump(data, self.data_log_file)
+            self.data_log_file.write("\n")
+            self.data_log_file.flush()
+        except Exception as e:
+            print(f"[data log error] {e}")
+
     def start_websocket_server(self):
         asyncio.run(self._websocket_task())
 
@@ -172,6 +182,16 @@ def apply_dark_theme(app):
         }
     """
     app.setStyleSheet(dark_stylesheet)
+
+def create_data_logger(name="driver_ui_data"):
+    os.makedirs("logs", exist_ok=True)
+    index = 1
+    while True:
+        filename = f"logs/{name}_{index:03}.jsonl"
+        if not os.path.exists(filename):
+            break
+        index += 1
+    return open(filename, "w", encoding="utf-8")
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

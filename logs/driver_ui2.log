@@ -1,0 +1,2 @@
+2025-05-24 16:34:09,913 - INFO - Using real serial port: /dev/ttyACM0
+2025-05-24 16:34:09,915 - INFO - Opened serial port /dev/ttyACM0 at 115200 baud.
