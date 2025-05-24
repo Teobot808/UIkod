@@ -101,7 +101,8 @@ class TelemetryDashboard(QMainWindow):
             try:
                 msg = self.socket.recv_json(zmq.NOBLOCK)
                 self.latest_data = msg
-                self.json_log_file.write(json.dumps(msg) + "\n")
+                timestamp = datetime.datetime.now().isoformat()
+                self.json_log_file.write(f"{timestamp} {json.dumps(msg)}\n")
                 self.json_log_file.flush()
 
                 self.update_values()
